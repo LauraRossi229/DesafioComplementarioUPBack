@@ -1,6 +1,8 @@
 import { userModel } from "../models/users.models.js";
 import {sendPasswordResetEmail} from "../utils/mails.js"; // Agrega la función de envío de correos}
+import {generateResetToken} from "../utils/passwordReset.js"
 
+// ... (código existente)
 
 export const requestPasswordReset = async (req, res) => {
   const { email } = req.body;
@@ -9,10 +11,15 @@ export const requestPasswordReset = async (req, res) => {
     const user = await userModel.findOne({ email });
 
     if (!user) {
+      console.log('Usuario no encontrado:', email);
       return res.status(404).send({ error: "Usuario no encontrado" });
     }
 
-    const resetToken = generateResetToken(); // Implementa esta función para generar un token único
+    console.log('Usuario encontrado:', user);
+
+    const resetToken = generateResetToken(user);
+    console.log('Token de restablecimiento generado:', resetToken);
+
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpires = Date.now() + 3600000; // Expira en 1 hora
 
@@ -23,9 +30,11 @@ export const requestPasswordReset = async (req, res) => {
 
     return res.status(200).send({ mensaje: "Correo de restablecimiento enviado con éxito" });
   } catch (error) {
+    console.log('Error en la solicitud de restablecimiento de contraseña:', error.message);
     return res.status(500).send({ error: `Error en la solicitud de restablecimiento de contraseña: ${error}` });
   }
 };
+
 
 export const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;

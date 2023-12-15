@@ -1,3 +1,5 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
@@ -8,6 +10,11 @@ const sendPasswordResetEmail = async (user, resetToken) => {
     // Verificar que las variables de entorno estén configuradas
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD || !process.env.CLIENT_URL) {
       throw new Error('Las variables de entorno no están configuradas correctamente.');
+    }
+
+    // Verificar que user.email y resetLink estén definidos
+    if (!user || !user.email || !resetToken) {
+      throw new Error('Correo electrónico del usuario o enlace de restablecimiento no definidos.');
     }
 
     const transporter = nodemailer.createTransport({
@@ -40,6 +47,4 @@ const sendPasswordResetEmail = async (user, resetToken) => {
   }
 };
 
-
-export { sendPasswordResetEmail };  
-
+export { sendPasswordResetEmail };
